@@ -1,10 +1,10 @@
 bl_info = {
     # required
     'name': 'Fur Shell Addon',
-    'blender': (2, 80, 0),
+    'blender': (2, 93, 0),
     'category': 'Object',
     # optional
-    'version': (1, 0, 0),
+    'version': (1, 0, 1),
     'author': 'Marcel Klasa',
 }
 
@@ -13,10 +13,6 @@ import bpy, copy
 height = 0.3
 
 class toShell():
-
-    bl_idname = 'opr.to_shell'
-    bl_label = 'To Shell'
-
     def createShell():
         act_obj = bpy.context.active_object
         new_obj = bpy.data.objects.new('Top_Shell', act_obj.data.copy())
@@ -28,7 +24,7 @@ class toShell():
 class toShellOperator(bpy.types.Operator):
     
     bl_idname = 'opr.to_shell_operator'
-    bl_label = 'To Shell opr'
+    bl_label = 'To Shell'
     
     def execute(self, context):
         
@@ -39,32 +35,32 @@ class toShellOperator(bpy.types.Operator):
 class Panel(bpy.types.Panel):
     
     bl_idname = 'VIEW3D_PT_example_panel'
-    bl_label = 'Panel'
+    bl_label = 'Shell'
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
+    bl_category = 'Shell Fur'
     
     def draw(self, context):
-        self.layout.label(text='Hello there')
+        self.layout.label(text='1. Make a shell')
         col = self.layout.column()
-        self.layout.operator(toShellOperator.bl_idname, text='Shellize')
+        self.layout.operator(toShellOperator.bl_idname, text='Create Shell')
 
-CLASSES = (
+CLASSES = [
     Panel,
+    toShell,
     toShellOperator,
-)
+]
 
 def register():
-    #print('registered') # just for debug
-    from bpy.utils import register_class
-    for clss in CLASSES:
-        bpy.utils.register_class(clss)
+    print('registered') # just for debug
+    for klass in CLASSES:
+        bpy.utils.register_class(klass)
 
 def unregister():
-    #print('unregistered') # just for debug
-    from bpy.utils import unregister_class
-    for clss in reversed(CLASSES):
-        bpy.utils.unregister_class(clss)
+    print('unregistered') # just for debug
+    for klass in CLASSES:
+        bpy.utils.unregister_class(klass)
 
-#if __name__ == '__main__':
-#    bpy.utils.register_class(toShellOperator)
-#    bpy.utils.register_class(Panel)
+if __name__ == '__main__':
+    bpy.utils.register_class(toShellOperator)
+    bpy.utils.register_class(Panel)
