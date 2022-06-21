@@ -14,9 +14,8 @@ height = 0.3
 
 class toShellData():
     def __init__(self):
-        self.act_obj = None
-        self.nodes = []
-        self.topShell = None
+        self.topShells = {}
+        self.nodes = {}
         self.layers = []
 
 
@@ -27,32 +26,41 @@ class toShell():
     ### BUTTON TOP SHELL
     
     def createShell():
-        act_obj = bpy.context.active_object
+        act_objs = bpy.context.selected_objects
         
-        if act_obj is None:
-            return
-        
-        topShell = bpy.data.objects.new('Top_Shell', act_obj.data.copy())
-        bpy.context.collection.objects.link(topShell)
+        for obj in  act_objs:
+            obj.update_from_editmode()
+            topShell = bpy.data.objects.new('Top_Shell', obj.data.copy())
+            bpy.context.collection.objects.link(topShell)
+            
+            topShell.location = obj.location.copy()
+            topShell.rotation_euler = obj.rotation_euler.copy()
+            
+            data.topShells[obj] = topShell
 
-        data.act_obj = act_obj
-
-        data.topShell = topShell
-
-        for v1, v2 in zip(act_obj.data.vertices, topShell.data.vertices):
-            v2.co += v2.normal * height
-            data.nodes.append((v1, v2))
+            for v1, v2 in zip(obj.data.vertices, topShell.data.vertices):
+                v2.co += v2.normal * height
+                data.nodes[v1] = v2
             
     ### BUTTON MID LAYER
             
     def CreateIntermediateLayers():
         
-        midLayer = bpy.data.objects.new('MidLayer', data.act_obj.data.copy())
-        bpy.context.collection.objects.link(midLayer)
-        
-        for lerp, v in zip(data.nodes, midLayer.data.vertices):
-            v.co = (lerp[0].co + lerp[1].co) / 2
-        
+        for obj, shell in data.topShells.items():
+            obj.update_from_editmode()
+            shell.update_from_editmode()
+            midLayer = bpy.data.objects.new('MidLayer', obj.data.copy())
+            bpy.context.collection.objects.link(midLayer)
+            
+            midLayer.location = obj.location.copy()
+            midLayer.rotation_euler = obj.rotation_euler.copy()
+            shell.location = obj.location.copy()
+            shell.rotation_euler = obj.rotation_euler.copy()
+                        
+            for v1, v2 in zip(obj.data.vertices, midLayer.data.vertices):
+                print(data.nodes[v1])
+                v2.co = (v1.co + data.nodes[v1].co) / 2
+            
 
 class toShellOperator(bpy.types.Operator):
     
@@ -87,8 +95,8 @@ class Panel(bpy.types.Panel):
     def draw(self, context):
         self.layout.label(text='1. Make a shell')
         col = self.layout.column()
-        col.enabled = False#bpy.context.active_object is not None
-        col.prop(self.layout.operator(toShellOperator.bl_idname, text='Create Shell'), "custom_property")
+        self.layout.enabled = len(bpy.context.selected_objects) > 0
+        self.layout.operator(toShellOperator.bl_idname, text='Create Shell')
         self.layout.label(text='2. Create intermediate layers')
         self.layout.operator(CreateMidLayersOperator.bl_idname, text='Create intermediate layers')
 
