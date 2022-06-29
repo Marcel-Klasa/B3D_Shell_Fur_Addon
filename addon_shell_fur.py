@@ -1,9 +1,7 @@
 bl_info = {
-    # required
     'name': 'Fur Shell Addon',
     'blender': (2, 93, 0),
     'category': 'Object',
-    # optional
     'version': (1, 0, 1),
     'author': 'Marcel Klasa Samuel Corno',
 }
@@ -52,16 +50,17 @@ class Panel(bpy.types.Panel):
     bl_category = 'Shell Fur'
     
     def draw(self, context):
-        self.layout.enabled = len(bpy.context.selected_objects) > 0
-        self.layout.label(text='1. Make a shell')
-        self.layout.prop(context.scene, 'height')
-        self.layout.operator(toShellOperator.bl_idname, text='Create Shell')
+        zone1 = self.layout.column()
+        zone1.label(text='1. Make a shell')
+        zone1.prop(context.scene, 'height')
+        zone1.operator(toShellOperator.bl_idname, text='Create Shell')
+        zone1.enabled = len(bpy.context.selected_objects) > 0
         
-        col = self.layout.column()
-        col.label(text='2. Create intermediate layers')
-        col.prop(context.scene, 'Layers')
-        col.operator(CreateMidLayersOperator.bl_idname, text='Create intermediate layers')
-        col.enabled = len(data.topShells) > 0
+        zone2 = self.layout.column()
+        zone2.label(text='2. Create intermediate layers')
+        zone2.prop(context.scene, 'Layers')
+        zone2.operator(CreateMidLayersOperator.bl_idname, text='Create intermediate layers')
+        zone2.enabled = len(data.topShells) > 0
 
 PROPS = {
     'height': bpy.props.FloatProperty(name='height', default=0.3, min = 0.05),
