@@ -1,8 +1,18 @@
+import bpy, copy
+
+class toShellData():
+    def __init__(self):
+        self.topShells = {}
+        self.nodes = {}
+        self.layers = []
+
+data = toShellData()
+
 class toShell():
 
     ### BUTTON TOP SHELL
     
-    def createShell():
+    def createShell(height):
         act_objs = bpy.context.selected_objects
         
         for obj in  act_objs:

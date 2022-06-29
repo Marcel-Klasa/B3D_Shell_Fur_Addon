@@ -1,5 +1,3 @@
-from ToShell import *
-
 bl_info = {
     # required
     'name': 'Fur Shell Addon',
@@ -10,19 +8,13 @@ bl_info = {
     'author': 'Marcel Klasa Samuel Corno',
 }
 
-import bpy, copy
+import copy
+import bpy
 
-height = 0.3
-
-class toShellData():
-    def __init__(self):
-        self.topShells = {}
-        self.nodes = {}
-        self.layers = []
-
-
-data = toShellData()
-            
+ToShellModule = bpy.data.texts["ToShell.py"].as_module()
+ToShell = ToShellModule.toShell
+ToShellData = ToShellModule.toShellData
+data = ToShellModule.data
 
 class toShellOperator(bpy.types.Operator):
     
@@ -31,20 +23,25 @@ class toShellOperator(bpy.types.Operator):
     
     def execute(self, context):
         
-        toShell.createShell()
+        ToShell.createShell(context.scene.height)
             
         return {'FINISHED'}
 
 class CreateMidLayersOperator(bpy.types.Operator):
     
-    bl_idname = 'opr.to_shell_operator_test'
-    bl_label = 'To Shell test'
+    bl_idname = 'opr.intermediate_layers_operator'
+    bl_label = 'intermediate layers'
     
     def execute(self, context):
         
-        toShell.CreateIntermediateLayers()
+        ToShell.CreateIntermediateLayers()
             
         return {'FINISHED'}
+
+myStringProp = bpy.props.StringProperty(
+  name='My String Property', default='hello',
+  description='A basic string'
+)
 
 class Panel(bpy.types.Panel):
     
@@ -55,32 +52,48 @@ class Panel(bpy.types.Panel):
     bl_category = 'Shell Fur'
     
     def draw(self, context):
-        self.layout.label(text='1. Make a shell')
-        col = self.layout.column()
         self.layout.enabled = len(bpy.context.selected_objects) > 0
+        self.layout.label(text='1. Make a shell')
+        self.layout.prop(context.scene, 'height')
         self.layout.operator(toShellOperator.bl_idname, text='Create Shell')
-        self.layout.label(text='2. Create intermediate layers')
-        self.layout.operator(CreateMidLayersOperator.bl_idname, text='Create intermediate layers')
+        
+        col = self.layout.column()
+        col.label(text='2. Create intermediate layers')
+        col.prop(context.scene, 'Layers')
+        col.operator(CreateMidLayersOperator.bl_idname, text='Create intermediate layers')
+        col.enabled = len(data.topShells) > 0
+
+PROPS = {
+    'height': bpy.props.FloatProperty(name='height', default=0.3, min = 0.05),
+    'Layers': bpy.props.IntProperty(name='Layers', default=3, min = 1),
+}
 
 CLASSES = [
     Panel,
-    toShell,
+    ToShell,
     toShellOperator,
     CreateMidLayersOperator,
-    toShellData,
+    ToShellData,
 ]
 
 def register():
-    print('registered') # just for debug
-    for klass in CLASSES:
-        bpy.utils.register_class(klass)
+    for name, prop in PROPS.items():
+        setattr(bpy.types.Scene, name, prop)
+        
+    for c in CLASSES:
+        bpy.utils.register_class(c)
 
 def unregister():
-    print('unregistered') # just for debug
-    for klass in CLASSES:
-        bpy.utils.unregister_class(klass)
+    for name, prop in PROPS.items():
+        delattr(bpy.types.Scene, name, prop)
+    
+    for c in CLASSES:
+        bpy.utils.unregister_class(c)
 
 if __name__ == '__main__':
+    for name, prop in PROPS.items():
+        setattr(bpy.types.Scene, name, prop)
+    
     bpy.utils.register_class(toShellOperator)
     bpy.utils.register_class(CreateMidLayersOperator)
     bpy.utils.register_class(Panel)
