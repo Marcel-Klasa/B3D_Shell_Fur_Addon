@@ -46,4 +46,4 @@ class toShell():
                 shell.rotation_euler = obj.rotation_euler.copy()
                 
                 for v1, v2 in zip(obj.data.vertices, layer.data.vertices):
-                    v2.co = v1.co + (data.nodes[v1].co - v1.co) * i / (layersCount + 2)
+                    v2.co = v1.co + (data.nodes[v1].co - v1.co) * i / (layersCount + 1)
