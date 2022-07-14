@@ -32,14 +32,10 @@ class CreateMidLayersOperator(bpy.types.Operator):
     
     def execute(self, context):
         
-        ToShell.CreateIntermediateLayers()
+        ToShell.CreateIntermediateLayers(context.scene.Layers)
             
         return {'FINISHED'}
 
-myStringProp = bpy.props.StringProperty(
-  name='My String Property', default='hello',
-  description='A basic string'
-)
 
 class Panel(bpy.types.Panel):
     
