@@ -47,6 +47,7 @@ class toShell():
     ### BUTTON MID LAYER
             
     def CreateIntermediateLayers(layersCount):
+        data.layers.clear()
         for obj, shell in data.topShells.items():
             for i in range(1, layersCount + 1):
                 obj.update_from_editmode()
@@ -63,11 +64,13 @@ class toShell():
                     v2.co = v1.co + (data.nodes[v1].co - v1.co) * i / (layersCount + 1)
                     
                 data.layers.append(layer)
-                
-        for layer in data.layers:
+    
+    def FuseLayers():
+        data.layers[0].select_set(True)
+        for layer in range(1, len(data.layers)):
             bpy.ops.object.select_all(action='DESELECT')
-            layer.select_set(state = True)
-            data.obj.select_set(state = True)
+            data.layers[0].select_set(state = True)
+            data.layers[layer].select_set(state = True)
             bpy.ops.object.join()    
 
 
@@ -132,6 +135,17 @@ class CreateMidLayersOperator(bpy.types.Operator):
             
         return {'FINISHED'}
 
+class FuseLayersOperator(bpy.types.Operator):
+    
+    bl_idname = 'opr.fuse_layers_operator'
+    bl_label = 'fuse layers'
+    
+    def execute(self, context):
+        
+        toShell.FuseLayers()
+            
+        return {'FINISHED'}
+
 class RenderLayersOperator(bpy.types.Operator):
     
     bl_idname = 'opr.render_layers_operator'
@@ -164,6 +178,7 @@ class Panel(bpy.types.Panel):
         zone2.label(text='3. Create intermediate layers')
         zone2.prop(context.scene, 'Layers')
         zone2.operator(CreateMidLayersOperator.bl_idname, text='Create intermediate layers')
+        zone2.operator(FuseLayersOperator.bl_idname, text='Fuse Layers')
         zone2.enabled = len(data.topShells) > 0
         
         zone3 = self.layout.column()
@@ -197,6 +212,7 @@ CLASSES = [
     toShell,
     toShellOperator,
     CreateMidLayersOperator,
+    FuseLayersOperator,
     RenderLayersOperator,
     toShellData,
 ]
@@ -221,5 +237,6 @@ if __name__ == '__main__':
     
     bpy.utils.register_class(toShellOperator)
     bpy.utils.register_class(CreateMidLayersOperator)
+    bpy.utils.register_class(FuseLayersOperator)
     bpy.utils.register_class(RenderLayersOperator)
     bpy.utils.register_class(Panel)
