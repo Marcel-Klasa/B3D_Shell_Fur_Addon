@@ -8,6 +8,8 @@ bl_info = {
 
 import copy
 import bpy
+from bpy.utils import resource_path
+from pathlib import Path
 
 ToShellModule = bpy.data.texts["ToShell.py"].as_module()
 ToShell = ToShellModule.toShell
@@ -36,6 +38,17 @@ class CreateMidLayersOperator(bpy.types.Operator):
             
         return {'FINISHED'}
 
+class RenderLayersOperator(bpy.types.Operator):
+    
+    bl_idname = 'opr.intermediate_layers_operator'
+    bl_label = 'intermediate layers'
+    
+    def execute(self, context):
+        
+        ToShell.CreateIntermediateLayers(context.scene.Layers)
+            
+        return {'FINISHED'}
+
 
 class Panel(bpy.types.Panel):
     
@@ -53,21 +66,40 @@ class Panel(bpy.types.Panel):
         zone1.enabled = len(bpy.context.selected_objects) > 0
         
         zone2 = self.layout.column()
-        zone2.label(text='2. Create intermediate layers')
+        zone2.label(text='2. Modify Shell shape')
+        zone2.label(text='3. Create intermediate layers')
         zone2.prop(context.scene, 'Layers')
         zone2.operator(CreateMidLayersOperator.bl_idname, text='Create intermediate layers')
         zone2.enabled = len(data.topShells) > 0
+        
+        zone3 = self.layout.column()
+        zone3.label(text='4. Select Path for saving')
+        zone3.prop(context.scene, 'filePath')
+        zone3.label(text='5. Select texture size')
+        zone3.prop(context.scene, 'imageSizeX')
+        zone3.prop(context.scene, 'imageSizeY')
+        zone3.label(text='6. Render and wait')
+        zone3.operator(CreateMidLayersOperator.bl_idname, text='Render')
+        zone3.enabled = len(data.topShells) > 0
 
 PROPS = {
     'height': bpy.props.FloatProperty(name='height', default=0.3, min = 0.05),
     'Layers': bpy.props.IntProperty(name='Layers', default=3, min = 1),
+    ############################# UNTESTED ###########################################################"
+    'filePath': bpy.props.StringProperty(name='filePath', default = bpy.path.abspath('//')),
+    'imageSizeX': bpy.props.IntProperty(name='imageSizeX', default = 4096, min = 1),
+    'imageSizeY': bpy.props.IntProperty(name='imageSizeY', default = 4096, min = 1),
 }
+
+
+######## Register everything ########
 
 CLASSES = [
     Panel,
     ToShell,
     toShellOperator,
     CreateMidLayersOperator,
+    RenderLayersOperator,
     ToShellData,
 ]
 
@@ -91,4 +123,5 @@ if __name__ == '__main__':
     
     bpy.utils.register_class(toShellOperator)
     bpy.utils.register_class(CreateMidLayersOperator)
+    bpy.utils.register_class(RenderLayersOperataor)
     bpy.utils.register_class(Panel)
