@@ -1,20 +1,21 @@
 bl_info = {
     'name': 'Fur Shell Addon',
-    'blender': (2, 93, 0),
+    'blender': (3, 2, 0),
     'category': 'Object',
-    'version': (1, 0, 1),
-    'author': 'Marcel Klasa Samuel Corno',
+    'version': (1, 0, 2),
+    'author': 'Marcel Klasa & Samuel Corno',
 }
 
 import copy
 import bpy
-from bpy.utils import resource_path
-from pathlib import Path
 
 ToShellModule = bpy.data.texts["ToShell.py"].as_module()
 ToShell = ToShellModule.toShell
 ToShellData = ToShellModule.toShellData
+Render = ToShellModule.Render
 data = ToShellModule.data
+
+
 
 class toShellOperator(bpy.types.Operator):
     
@@ -40,12 +41,12 @@ class CreateMidLayersOperator(bpy.types.Operator):
 
 class RenderLayersOperator(bpy.types.Operator):
     
-    bl_idname = 'opr.intermediate_layers_operator'
-    bl_label = 'intermediate layers'
+    bl_idname = 'opr.render_layers_operator'
+    bl_label = 'render layers'
     
     def execute(self, context):
         
-        ToShell.CreateIntermediateLayers(context.scene.Layers)
+        Render.applyMaterials(data.layers,data.topShells)
             
         return {'FINISHED'}
 
@@ -73,22 +74,26 @@ class Panel(bpy.types.Panel):
         zone2.enabled = len(data.topShells) > 0
         
         zone3 = self.layout.column()
-        zone3.label(text='4. Select Path for saving')
+        zone3.label(text='4. Unwrap UVs')
+        zone3.label(text='5. Select Path for saving')
         zone3.prop(context.scene, 'filePath')
-        zone3.label(text='5. Select texture size')
+        zone3.label(text='6. Select texture size')
         zone3.prop(context.scene, 'imageSizeX')
         zone3.prop(context.scene, 'imageSizeY')
-        zone3.label(text='6. Render and wait')
-        zone3.operator(CreateMidLayersOperator.bl_idname, text='Render')
+        zone3.label(text='7. Render and wait')
+        zone3.operator(RenderLayersOperator.bl_idname, text='Render')
         zone3.enabled = len(data.topShells) > 0
+        
+        #IMAGE_MT_editor_menus.draw_collapsible(context, layout)
+        
+        
 
 PROPS = {
     'height': bpy.props.FloatProperty(name='height', default=0.3, min = 0.05),
     'Layers': bpy.props.IntProperty(name='Layers', default=3, min = 1),
-    ############################# UNTESTED ###########################################################"
-    'filePath': bpy.props.StringProperty(name='filePath', default = bpy.path.abspath('//')),
-    'imageSizeX': bpy.props.IntProperty(name='imageSizeX', default = 4096, min = 1),
-    'imageSizeY': bpy.props.IntProperty(name='imageSizeY', default = 4096, min = 1),
+    'filePath': bpy.props.StringProperty(name='Path', default = bpy.path.abspath('//')),
+    'imageSizeX': bpy.props.IntProperty(name='Size X', default = 4096, min = 1),
+    'imageSizeY': bpy.props.IntProperty(name='Size Y', default = 4096, min = 1),
 }
 
 
@@ -123,5 +128,5 @@ if __name__ == '__main__':
     
     bpy.utils.register_class(toShellOperator)
     bpy.utils.register_class(CreateMidLayersOperator)
-    bpy.utils.register_class(RenderLayersOperataor)
+    bpy.utils.register_class(RenderLayersOperator)
     bpy.utils.register_class(Panel)
